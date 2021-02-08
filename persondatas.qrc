@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/new/prefix1">
+        <file>related_file/personDatas.txt</file>
+    </qresource>
+</RCC>
