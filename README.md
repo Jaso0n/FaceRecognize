@@ -15,7 +15,7 @@
 [NormFace: L2 Hypersphere Embedding for Face Verification][3]
 
 ## Links
-* https://pytorch-cn.readthedocs.io/zh/latest/torchvision/torchvision-transform/
+* [Pytorch Doc](https://pytorch-cn.readthedocs.io/zh/latest/torchvision/torchvision-transform/)
 * https://github.com/siriusdemon/Build-Your-Own-Face-Model
 * https://github.com/deepinsight/insightface/tree/master/recognition
 * https://github.com/TreB1eN/InsightFace_Pytorch
