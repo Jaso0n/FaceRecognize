@@ -10,9 +10,9 @@ class ArcFace(nn.Module):
             the angular between two vectors is met:
                 0 <= m + theta <= pi 
             Note that:
-            if (m+theta) > pi, then theta >= pi - m. 
-            In [0,pi] we have 
-                cos(theta) < cos(pi - m)
+                -m <= theta <= pi - m
+            we have 
+                cos(m) <= cos(theta) < cos(pi - m)
             So we can use cos(pi-m) as threshold to check whether (m+theta) go out of [0,pi]
 
             Args:
@@ -32,17 +32,17 @@ class ArcFace(nn.Module):
         self.cos_m = math.cos(m)
         self.sin_m = math.sin(m)
         self.th = math.cos(math.pi - m) # threshold
-        self.mm = math.sin(math.pi - m) * m # CosFace
+        self.mm = math.sin(math.pi - m) * m # 
 
         def forward(self, input, label):
-            cosine = F.linear(F.normalize(input), F.normalize(self.weight))
-            sine = ((1.0 - cosine.pow(2)).clamp(0,1)).sqrt()
-            theta = cosine * self.cos_m - sine * self.sin_m
-            theta = torch.where(cosine > self.th, theta, cosine - self.mm) # drop to CosFace
+            cosine = F.linear(F.normalize(input), F.normalize(self.weight))#cos(theta)
+            sine = ((1.0 - cosine.pow(2)).clamp(0,1)).sqrt()#sin(theta)
+            phi = cosine * self.cos_m - sine * self.sin_m   #cos(theta+m)
+            phi = torch.where(cosine > self.th, phi, cosine - self.mm) # drop to CosFace
             
             output = cosine * 1.0
             batch_size = len(output)
-            output[range(batch_size), label] = theta[range(batch_size),label]
+            output[range(batch_size), label] = phi[range(batch_size),label]
             return output * self.s
 
 class CosFace(nn.Module):

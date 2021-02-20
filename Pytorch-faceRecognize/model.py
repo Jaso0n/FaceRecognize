@@ -38,13 +38,13 @@ class MobileNetV2_FaceNet(nn.Module):
            (2,  64, 4, 1, 1),
            (4, 128, 1, 2, 1),
            (2, 128, 6, 1, 1),
-           (4, 128, 1, 2, 0),
+           (4, 128, 1, 2, 1),
            (2, 128, 3, 1, 1)]
 
     # start convolution layer
     def conv2d_bn_relu(self,in_channel, out_channel):
         return nn.Sequential(
-            nn.Conv2d(in_channel,out_channel,kernel_size=3,stride=2,padding=1,bias=True),
+            nn.Conv2d(in_channel,out_channel,kernel_size=3,stride=2,padding=1,bias=False),
             nn.BatchNorm2d(out_channel),
             nn.ReLU(inplace=True)
         )
@@ -57,29 +57,28 @@ class MobileNetV2_FaceNet(nn.Module):
                 in_channel = output_channel
         return nn.Sequential(*layers)
     
-    def __init__(self, num_classes = 10575):
+    def __init__(self, embedding_size):
         super(MobileNetV2_FaceNet, self).__init__()
-
         self.conv1 = self.conv2d_bn_relu(3,64)
         self.bottleneck_layers = self.make_bottleneck_layers(64)
         self.expand_conv = nn.Conv2d(128,512,kernel_size=1,stride=1,padding=0,bias=False)
-        self.depthconv = nn.Conv2d(512,512,kernel_size=6,stride=1,padding=0,bias=False,groups=512)
-        self.linear_conv = nn.Conv2d(512,128,kernel_size=1,stride=1,padding=0,bias=False)
-        self.innerproduct = nn.Linear(128,num_classes)
+        self.depthconv = nn.Conv2d(512,512,(6,6),stride=1,padding=0,bias=False,groups=512)
+        self.linear_conv = nn.Linear(512,embedding_size,bias=False)     #input = 512, output = embedding_size
+        self.bn1d = nn.BatchNorm1d(embedding_size)
 
     def forward(self,x):
         out = self.conv1(x)
         out = self.bottleneck_layers(out)
         out = self.expand_conv(out)
         out = self.depthconv(out)
+        out = out.view(out.shape[0],-1)# flatten
         out = self.linear_conv(out)
-        out = out.view(1,128)
-        out = self.innerproduct(out)
+        out = self.bn1d(out)
         return out
 
 def test():
-    net = MobileNetV2_FaceNet()
-    x = torch.randn(1,3,112,112)
+    net = MobileNetV2_FaceNet(128)
+    x = torch.randn(10,3,96,96)
     y = net(x)
     print(y.size())
 
