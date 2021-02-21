@@ -3,6 +3,15 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 
+class DenseClassifier(nn.Module):
+    def __init__(self, embedding_size, class_num):
+        super().__init__()
+        self.linear = nn.Linear(embedding_size,class_num,bias=False)
+    
+    def forward(self,input):
+        output = self.linear(input)
+        return output
+
 class ArcFace(nn.Module):
     def __init__(self, embedding_size, class_num, s = 30.0, m = 0.5):
         """ ArcFace formular in programming
@@ -35,14 +44,14 @@ class ArcFace(nn.Module):
         self.mm = math.sin(math.pi - m) * m # 
 
     def forward(self, input, label):
-        cosine = F.linear(F.normalize(input), F.normalize(self.weight))#cos(theta)
-        sine = ((1.0 - cosine.pow(2)).clamp(0,1)).sqrt()#sin(theta)
-        phi = cosine * self.cos_m - sine * self.sin_m   #cos(theta+m)
-        phi = torch.where(cosine > self.th, phi, cosine - self.mm) # drop to CosFace
+        cosine = F.linear(F.normalize(input), F.normalize(self.weight))#cos(theta), target logits
+        sine = ((1.0 - cosine.pow(2)).clamp(0,1)).sqrt()               #sin(theta)
+        phi = cosine * self.cos_m - sine * self.sin_m                  #cos(theta+m), target logits with additional margin(penalize)
+        phi = torch.where(cosine > self.th, phi, cosine - self.mm)     #drop to CosFace
             
-        output = cosine * 1.0
+        output = cosine * 1.0 # target logits, tricky way to make backward work
         batch_size = len(output)
-        output[range(batch_size), label] = phi[range(batch_size),label]
+        output[range(batch_size), label] = phi[range(batch_size), label]
         return output * self.scale
 
 class CosFace(nn.Module):

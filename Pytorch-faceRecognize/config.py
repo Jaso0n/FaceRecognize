@@ -4,7 +4,7 @@ import torchvision.transforms as T
 class Config:
     # network settings
     backbone = 'myfmobile'
-    metric = 'arcface'
+    metric = 'softmax'
     embedding_size = 128
     # data preprocess
     input_shape = [3,96,96] #CHW
@@ -25,21 +25,24 @@ class Config:
     train_root = '/home/ubuntu/DataSets/HumanFace/casia_cleaned/CASIA-WebFace/'
     # lfw validation dataset
     lfw_test_root = '/home/ubuntu/Desktop/zhk/caffe_model/LFW/lfw/'
-    lfw_test_list = '/home/ubuntu/Desktop/zhk/caffe_model/pairs.txt'
+    lfw_test_list = '/home/ubuntu/FaceRecognize/Pytorch-faceRecognize/pairs.txt'
 
     # training settings
     checkpoints = "checkpoints"
     restore = False
     restore_model = ""
-    test_model = "checkpoints/fmobile.pth"
+    #test_model = "checkpoints/3.pth"
 
     train_batch_size = 64
     test_batch_size = 60
 
+    test_step = 5000
+    step_show = 50
+
     epoch = 24
     optimizer = 'sgd'
     lr = 1e-1
-    lr_step = 8
+    lr_step = 8 # 8 epoch
     lr_decay = 0.95
     weight_decay = 5e-4
     loss = 'focal_loss'
