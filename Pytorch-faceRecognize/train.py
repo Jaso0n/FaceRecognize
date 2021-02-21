@@ -76,6 +76,7 @@ def train(conf):
     nowtime = time.strftime("%Y-%m-%d-%H:%M:%S", time.localtime())
     logger = get_logger("./"+ nowtime +"-train.log")
     logger.info('start training!')
+    iterations = 0
     net.train()
     for e in range(conf.epoch):
         for batch_idx,data in enumerate(dataloader):
@@ -91,11 +92,12 @@ def train(conf):
             if (batch_idx % conf.step_show) == 0:
                 logger.info('Epoch:[{}/{}] \t \t Iteration:[{}] \t \t loss={:.5f} \t \t lr={:.3f}'.format(e ,conf.epoch, batch_idx,loss,scheduler.get_lr()[0]))
                 #print("Train Epoch:[%d/%d]:interation %d \t \t Loss: %.5f \t \t learning rate: %f" %(e,conf.epoch,batch_idx, loss,scheduler.get_lr()[0]))
-            if (batch_idx % 500) == 0 and batch_idx != 0:
-                backbone_path = osp.join(conf.checkpoints, f"{batch_idx}.pth")
+            if (iterations % conf.test_step) == 0 and iterations !=0:
+                backbone_path = osp.join(conf.checkpoints, f"{iterations}.pth")
                 torch.save(net.state_dict(), backbone_path)
-                accuracy,threshold = test.test(conf,f"./checkpoints/{batch_idx}.pth")
+                accuracy,threshold = test.test(conf,f"./checkpoints/{iterations}.pth")
                 print(f"\nLFW Test:Epoch[{e:d}]: Iteration {batch_idx:d} \t \t accuracy: {accuracy:.3f} \t \t threshold: {threshold:.3f}\n")
+            iterations = iterations + 1
         scheduler.step()
 
 if __name__ == "__main__":

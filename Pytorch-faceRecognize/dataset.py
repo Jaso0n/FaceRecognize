@@ -1,8 +1,9 @@
 from torch.utils.data import DataLoader
 from torchvision.datasets import ImageFolder
-
+import torchvision as tv
 from config import config as conf
-
+from torchvision import transforms
+import time
 
 def load_data(conf, training=True):
     if training:
@@ -19,3 +20,13 @@ def load_data(conf, training=True):
     loader = DataLoader(data, batch_size=batch_size, shuffle=True, 
         pin_memory=conf.pin_memory, num_workers=conf.num_workers)
     return loader, class_num
+
+if __name__ == '__main__':
+    #check dataset
+    loader, class_num = load_data(conf)
+    to_pil_image = transforms.ToPILImage()
+    for image, label in loader:
+        img = to_pil_image(image[0])
+        img.show()
+        time.sleep(1)
+    # OK
