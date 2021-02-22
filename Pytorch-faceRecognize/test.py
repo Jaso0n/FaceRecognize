@@ -39,7 +39,7 @@ def _preprocess(images: list, transform) -> torch.Tensor:
         im = Image.open(img)
         im = transform(im)
         ret.append(im)
-    data = torch.stack(ret, dim=0) # 按行拼接，(2x3) cat (4x3) = 6x3
+    data = torch.stack(ret, dim=0) # torch.cat is different from torch.stack
     return data
 
 def _getFeature(images:list, transform, net, device) -> dict:
@@ -92,7 +92,8 @@ def compute_accuracy(feature_dict, pair_list, test_root):
 def test(conf,model_path):
     model = MobileFaceNet(conf.embedding_size)
     model = nn.DataParallel(model)
-    model.load_state_dict(torch.load(model_path, map_location=conf.device))
+    checkpoint = torch.load(model_path)
+    model.load_state_dict(checkpoint['net'])
     model.eval()
 
     images = _getImageSet(conf.lfw_test_list)

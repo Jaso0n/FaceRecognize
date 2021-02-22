@@ -7,7 +7,7 @@ class FocalLoss(nn.Module):
     def __init__(self, gamma=2):
         """
         when gamma = 0, the focalLoss drops to softmax,
-        focal loss usually used in object detection
+        focal loss usually used in object detection, and hard classification
         """
         super().__init__()
         self.gamma = gamma
