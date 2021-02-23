@@ -89,12 +89,12 @@ def compute_accuracy(feature_dict, pair_list, test_root):
     accuracy, threshold = searchThreshold(similarities, labels)
     return accuracy, threshold
 
-def test(conf,model_path):
-    model = MobileFaceNet(conf.embedding_size)
-    model = nn.DataParallel(model)
-    checkpoint = torch.load(model_path)
-    model.load_state_dict(checkpoint['net'])
-    model.eval()
+def test(conf,net,model_path=0):
+    #model = MobileFaceNet(conf.embedding_size)
+    #model = nn.DataParallel(model)
+    #checkpoint = torch.load(model_path)
+    #model.load_state_dict(checkpoint['net'])
+    net.eval()
 
     images = _getImageSet(conf.lfw_test_list)
     images = [osp.join(conf.lfw_test_root, img) for img in images]
@@ -102,7 +102,7 @@ def test(conf,model_path):
 
     feature_dict = dict()
     for group in groups:
-        d = _getFeature(group, conf.test_transform, model, conf.device)
+        d = _getFeature(group, conf.test_transform, net, conf.device)
         feature_dict.update(d) 
     accuracy, threshold = compute_accuracy(feature_dict, conf.lfw_test_list, conf.lfw_test_root) 
     return accuracy, threshold

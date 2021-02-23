@@ -28,18 +28,20 @@ class Config:
     lfw_test_list = '/home/ubuntu/FaceRecognize/Pytorch-faceRecognize/pairs.txt'
 
     # training settings
-    checkpoints = "checkpoints"
+    checkpoints_path = "checkpoints"
     restore = False
     restore_model = ""
 
     train_batch_size = 64
     test_batch_size = 60
 
-    test_step = 5000     # testing on lfw step
+    test_step = 1000     # testing on lfw step
     step_show = 50       # display step
 
-    epoch = 30           # max epoch
-    optimizer = 'sgd'    # solver 
+    #save_step = 5000
+    MAX_EPOCH = 30       # max epoch
+    optimizer = 'sgd'    # solver
+    lr_gamma = 10
     lr = 1e-1            # base learning rate
     lr_step = 8          # learning rate changing step, every K epoch: lr = lr * gamma^(current_epoch // lr_step)
     momentum = 0.9       # momentum in solver
@@ -48,6 +50,6 @@ class Config:
     loss = 'focal_loss'  # focal loss is based on softmax Loss
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     pin_memory = True
-    num_workers = 8 # dataloader working thread
+    num_workers = 8      # dataloader working thread
 
 config = Config()
