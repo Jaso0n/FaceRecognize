@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.autograd import Variable
 import math
 
 class DenseClassifier(nn.Module):
@@ -13,7 +14,7 @@ class DenseClassifier(nn.Module):
         return output
 
 class ArcFace(nn.Module):
-    def __init__(self, embedding_size, class_num, s = 30.0, m = 0.5):
+    def __init__(self, embedding_size, class_num, s = 32.0, m = 0.5): # suggestion scale = 32, 64
         """ ArcFace formular in programming
             origin formular : cos(m + theta) = cos(m)cos(theta) - sin(m)sin(theta)
             the angular between two vectors is met:
@@ -78,3 +79,34 @@ class CosFace(nn.Module):
         batch_size = len(output)
         output[range(batch_size), label] = phi[range(batch_size), label]
         return output * self.s
+
+class NormLinear(nn.Module):
+    '''
+        See normface https://arxiv.org/abs/1704.06369,
+        Please turn bias off in linear layer
+    '''
+    # weight norm=wn,feature norm = fn
+    def __init__(self, in_features, out_features, bias=False, wn=True, fn=True, scale = 32): 
+        super(NormLinear, self).__init__()
+        self.in_features = in_features
+        self.out_features = out_features
+        self.wn = wn
+        self.fn = fn
+        self.weight = nn.Parameter(torch.FloatTensor(out_features, in_features))
+        self.scale = scale
+        nn.init.xavier_uniform_(self.weight) # reset weight 
+    
+    def forward(self, input):
+        weight_norm = F.normalize(self.weight)
+        input_norm = F.normalize(input)
+        output = F.linear(input_norm, weight_norm)
+        return self.scale * output
+
+if __name__ == '__main__':
+    model = NormLinear(4, 1, wn=False, fn=False)
+    x = Variable(torch.Tensor([[1, 2, 3, 4]]), requires_grad=True)
+    y = model(x)
+    print('x: {} y: {}'.format(x, y))
+    y.backward()
+    print('x.grad: {}'.format(x.grad))
+    print('weight.grad: {}'.format(model.weight.grad))

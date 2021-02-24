@@ -52,7 +52,7 @@ def _getFeature(images:list, transform, net, device) -> dict:
     return res
 
 def CalcuSimilarity(x1,x2):
-    return np.dot(x1,x2) / (np.linalg.norm(x1) * np.linalg.norm(x2))
+    return np.dot(x1,x2) / (np.linalg.norm(x1) * np.linalg.norm(x2) + 1e-10)
 
 def searchThreshold(y_score, y_true):
     y_score = np.asarray(y_score)

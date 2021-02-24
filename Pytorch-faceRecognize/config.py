@@ -4,7 +4,7 @@ import torchvision.transforms as T
 class Config:
     # network settings
     backbone = 'myfmobile'
-    metric = 'softmax'
+    metric = 'normlinear'
     embedding_size = 128
     # data preprocess
     input_shape = [3,96,96] #CHW
@@ -35,19 +35,17 @@ class Config:
     train_batch_size = 64
     test_batch_size = 60
 
-    test_step = 1000     # testing on lfw step
+    test_step = 0        # testing on lfw step
     step_show = 50       # display step
-
-    #save_step = 5000
     MAX_EPOCH = 30       # max epoch
     optimizer = 'sgd'    # solver
     lr_gamma = 10
     lr = 1e-1            # base learning rate
-    lr_step = 8          # learning rate changing step, every K epoch: lr = lr * gamma^(current_epoch // lr_step)
+    lr_step = 12         # learning rate changing step, every K epoch: lr = lr * gamma^(current_epoch // lr_step)
     momentum = 0.9       # momentum in solver
     weight_decay = 4e-5  # network general weight_decay, L2 norm in weight update to prevent overfit
     class_wd = 4e-4      # weight decay for classifier layer, eg arcface/full connect.
-    loss = 'focal_loss'  # focal loss is based on softmax Loss
+    loss = 'ce'          # focal loss is based on softmax Loss
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     pin_memory = True
     num_workers = 8      # dataloader working thread
