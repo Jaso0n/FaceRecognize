@@ -132,6 +132,19 @@ class Train():
             elif isinstance(op, nn.Linear):
                 nn.init.normal_(op.weight.data) # default mean=0, std =1
                 #nn.init.constant_(op.weight.bias,val=0)
+    def _get_accuracy(self, output, target, topk=(1,)):
+        maxk = max(topk)
+        batch_size = target.size(0)
+
+        _, pred = output.topk(maxk, 1, True, True)
+        pred    = pred.t()
+        correct = pred.eq(target.view(1, -1).expand_as(pred))
+
+        res = []
+        for k in topk:
+            correct_k = correct[:k].view(-1).float().sum(0)
+            res.append(correct_k.mul_(100.0 / batch_size))
+        return res
 
     def _learner(self, optimizer, model, metric, epoch, dataloader):
         model.train()
@@ -141,17 +154,21 @@ class Train():
             inputs = inputs.to(self.device)
             labels = labels.to(self.device)
             x = model(inputs)                 # embedding features
-            thetas = metric(x, labels) if self.config.metric == 'arcface' else metric(x)
+            if self.config.metric == 'arcface': 
+                thetas, origin_theta = metric(x, labels)
+            else : 
+                thetas = metric(x)
             loss = self.criterion(thetas, labels)             # loss function ce
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
             if (batch_idx % self.config.step_show) == 0:
                     current_lr = optimizer.param_groups[0]['lr']
-                    #prec1, prec5 = _get_accuracy(output.data, target, topk=(1,5))
-                    self.logger.info('Epoch:[{}/{}] Iteration:{}\t loss = {:.4f}\t lr = {:f}'.format(
-                        epoch ,self.config.MAX_EPOCH, iteration, loss, current_lr))
-    
+                    prec1, prec5 = self._get_accuracy(origin_thetas.data, labels, topk=(1,5)) if self.config.metric == 'arcface' else self._get_accuracy(thetas.data, labels, topk=(1,5))
+                    self.logger.info('Epoch:[{}/{}] Iteration:{}\t loss = {:.4f}\t accuracy = {:.3f}\t lr = {:f}'.format(
+                        epoch ,self.config.MAX_EPOCH, iteration, loss, prec1, current_lr))
+
+
     def train(self,start_epoch):
         optimizer = self.optimizer
         model = self.net
@@ -165,19 +182,19 @@ class Train():
             
             self._learner(optimizer, model, metric, epoch, dataloader)
 
-            model_name = 'checkpoint_{}.pth'.format(epoch)
             if epoch >= self.config.test_step:
                 accuracy, threshold = test.test(self.config, model)
                 self.logger.info('Start to test, accuracy = {}, threshold = {}'.format(accuracy, threshold))
-                if accuracy > test_best_step : 
-                    test_best_step = accuracy
-                    best_epoch = epoch
+                if accuracy > test_best_acc :
+                    model_name = 'checkpoint_{}.pth'.format(epoch)
+                    test_best_acc = accuracy
+                    #best_epoch = epoch
                     checkpoint = {
-                        "epoch" : best_epoch,
+                        "epoch" : epoch,
                         "lr" : optimizer.param_groups[0]['lr'],
-                        "net" : model.state.dict(),
+                        "net" : model.state_dict(),
                         "metric" : metric.state_dict(),
-                        "acc" : test_best_step
+                        "acc" : test_best_acc
                     }
                     torch.save(checkpoint, model_name)
                     self.logger.info('Save model to \'{}\''.format(model_name))
