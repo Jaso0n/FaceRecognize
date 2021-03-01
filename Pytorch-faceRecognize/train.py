@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
+from model import Resnet as ResNet20
 from model import MobileNetV2_FaceNet as MobileFaceNet
 from metric import ArcFace,DenseClassifier,NormLinear
 from loss import FocalLoss
@@ -72,8 +73,10 @@ class Train():
             self.net = MobileFaceNet(self.embedding_size).to(self.device)   # Create net and copy net tensor to the GPU, do it before loading data
             self.logger.info("Network backbone is {}".format(self.config.backbone))
             self.logger.info("{}".format(self.net))
-        else:
-            self.net = MobileFaceNet(self.embedding_size).to(self.device)
+        elif self.config.backbone == 'resnet20':
+            self.net = ResNet20().to(self.device)
+            self.logger.info("Network backbone is {}".format(self.config.backbone))
+            self.logger.info("{}".format(self.net))
 
         if self.config.metric == 'arcface':
             self.metric = ArcFace(self.embedding_size, self.class_num).to(self.device)
@@ -86,13 +89,13 @@ class Train():
             self.logger.info("{}".format(self.metric))
 
         elif self.config.metric == 'normlinear':
-            self.metric = NormLinear(self.embedding_size, self.class_num).to(self.device)
+            self.metric = NormLinear(512, self.class_num).to(self.device)
             self.logger.info("Metric fucntion is {}".format(self.config.metric))
             self.logger.info("{}".format(self.metric))
         else:
             self.logger.info("Please specify a metric")
             exit(0)
-
+        
         self._weight_init()
         # Send data to multiple gpu
         self.net = nn.DataParallel(self.net)
@@ -220,6 +223,7 @@ class Train():
 
 if __name__ == "__main__":
     resume_train_model = './softmax_loss_checkpoints/210000.pth'
-    train = Train(conf)
+    #train = Train(conf)
     #train.resume_train(conf,'./checkpoints/210000.pth','arcface',0.001)
-    train.train(0)
+    #train.train(0)
+    torch

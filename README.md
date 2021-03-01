@@ -1,7 +1,10 @@
 # This is my Face Recognition repo!
 
 ## From LeNet to MobileNet, the lighter but stronger CNN backbone
+    
+    LeNet proposed by Prof. Yann LeCun, the first Convolutional Neural Network used for document recognition, is a milestone of machine learning. However, restricted by the
 
+deveplopment of computer hardware, the CNN didn't since the AlexNet 
 
 ## Face Recognition with Deep Learning
 

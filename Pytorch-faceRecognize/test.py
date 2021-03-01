@@ -90,10 +90,6 @@ def compute_accuracy(feature_dict, pair_list, test_root):
     return accuracy, threshold
 
 def test(conf,net,model_path=0):
-    #model = MobileFaceNet(conf.embedding_size)
-    #model = nn.DataParallel(model)
-    #checkpoint = torch.load(model_path)
-    #model.load_state_dict(checkpoint['net'])
     net.eval()
 
     images = _getImageSet(conf.lfw_test_list)
@@ -106,4 +102,10 @@ def test(conf,net,model_path=0):
         feature_dict.update(d) 
     accuracy, threshold = compute_accuracy(feature_dict, conf.lfw_test_list, conf.lfw_test_root) 
     return accuracy, threshold
-    
+
+def main():
+    model_path = './softmax_loss_checkpoints/'
+    model = MobileFaceNet(conf.embedding_size)
+    model = nn.DataParallel(model)
+    checkpoint = torch.load(model_path)
+    model.load_state_dict(checkpoint['net'])

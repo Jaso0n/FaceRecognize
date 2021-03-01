@@ -3,15 +3,16 @@ import torchvision.transforms as T
 
 class Config:
     # network settings
-    backbone = 'myfmobile'
+    backbone = 'resnet20'
     metric = 'normlinear'
     embedding_size = 128
     # data preprocess
-    input_shape = [3,96,96] #CHW
+    #input_shape = [3,96,96] #CHW for mobile face net
+    input_shape = [3,112,96]
     train_transform = T.Compose([
         T.RandomHorizontalFlip(),
         T.Resize((128,128)),           #resize 250x250 to 128x128
-        T.RandomCrop(input_shape[1:]), # crop image to 96x96 randomly
+        T.RandomCrop(input_shape[1:]), # crop image to randomly
         T.ToTensor(),
         T.Normalize(mean=[0.5,0.5,0.5],std=[0.5,0.5,0.5])
     ])
